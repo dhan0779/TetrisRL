@@ -1,2 +1,2 @@
-# RL-Tetris
+# TetrisRL
 Making Tetris using RL

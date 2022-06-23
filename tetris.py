@@ -83,3 +83,6 @@ class Tetris:
             board.insert(0, [0]*self.width)
         return board, num_cleared
     
+    def next_state(self, state): #might change based on other features
+        self.board = state[0]
+        self.lines_cleared += state[1]

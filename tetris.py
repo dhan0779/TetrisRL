@@ -27,6 +27,8 @@ class Tetris:
         self.board = [[0] * self.width for _ in range(self.height)]
         self.piece = -1 #use indicies to keep track of piece in pieces
         self.lines_cleared = 0
+        self.max_height = 0
+        self.bumpy = 0
 
     def get_next_piece(self):
         self.piece = random.randint(0, len(self.pieces)-1)
@@ -53,8 +55,8 @@ class Tetris:
                 j = 0
                 while self.check_valid_move((j,i), next_piece):
                     j+=1
-                nboard, rows_cleared = self.put_piece((j-1, i), next_piece)
-                all_states.append((nboard, rows_cleared))
+                nboard, rows_cleared, max_height, bumpy = self.put_piece((j-1, i), next_piece)
+                all_states.append((nboard, [rows_cleared, max_height, bumpy]))
             next_piece = self.rotate_piece(next_piece)
         return all_states
 
@@ -81,8 +83,36 @@ class Tetris:
             else: n_board.append(row)
         for _ in range(num_cleared):
             board.insert(0, [0]*self.width)
-        return board, num_cleared
+
+        max_height = max(self.max_height, pos[1])
+
+        bumpy = 0
+        prev_height = -1
+        r = 0
+        c = 0
+        while c < len(board[0]):
+            if r == len(board) - 1:
+                if prev_height == -1:
+                    prev_height = r
+                bumpy += (prev_height - r)
+                prev_height = r
+                r = 0
+                c += 1
+            elif board[r][c] == 0:
+                r += 1
+            else:
+                if prev_height == -1:
+                    prev_height = r
+                bumpy += (prev_height - r)
+                prev_height = r
+                r = 0
+                c += 1
+            
+        return board, num_cleared, max_height, bumpy
     
     def next_state(self, state): #might change based on other features
         self.board = state[0]
-        self.lines_cleared += state[1]
+
+        self.lines_cleared += state[1][0]
+        self.max_height = state[1][1]
+        self.bumpy = state[1][2]

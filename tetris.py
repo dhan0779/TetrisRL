@@ -33,6 +33,7 @@ class Tetris:
         self.lines_cleared = 0
         self.max_height = 0
         self.bumpy = 0
+        self.holes = 0
 
     def get_next_piece(self):
         self.piece = random.randint(0, len(self.pieces)-1)
@@ -59,18 +60,10 @@ class Tetris:
                 j = 0
                 while self.check_valid_move((j,i), next_piece):
                     j+=1
-                nboard, rows_cleared, max_height, bumpy = self.put_piece((j-1, i), next_piece)
-                all_states.append((nboard, [rows_cleared, max_height, bumpy]))
+                nboard, rows_cleared, max_height, bumpy, holes = self.put_piece((j-1, i), next_piece)
+                all_states.append((nboard, [rows_cleared, max_height, bumpy, holes]))
             next_piece = self.rotate_piece(next_piece)
         return all_states
-
-    def check_holes(self):
-        num_holes = 0
-        for i in range(1, self.width - 1):
-            for j in range(1, self.height - 1):
-                if self.board[i][j] == 0 and self.board[i+1][j] != 0 and self.board[i-1][j] != 0 and self.board[i][j+1] != 0 and self.board[i][j-1] != 0 and self.board[i+1][j+1] != 0 and self.board[i-1][j-1] != 0 and self.board[i+1][j-1] != 0 and self.board[i-1][j+1] != 0:
-                    num_holes += 1
-        return num_holes
 
     def check_valid_move(self, pos, piece):  # check if putting piece is valid
         for i in range(len(piece)):
@@ -120,33 +113,44 @@ class Tetris:
                 prev_height = r
                 r = 0
                 c += 1
+
+        num_holes = 0
+        for i in range(1, len(board) - 2):
+            for j in range(1, len(board[0])- 2):
+                if board[i][j] == 0 and board[i+1][j] != 0 and board[i-1][j] != 0 and board[i][j+1] != 0 and board[i][j-1] != 0 and board[i+1][j+1] != 0 and board[i-1][j-1] != 0 and board[i+1][j-1] != 0 and board[i-1][j+1] != 0:
+                    num_holes += 1
             
-        return board, num_cleared, max_height, bumpy
+        return board, num_cleared, max_height, bumpy, num_holes
     
     def next_state(self, state): #might change based on other features
         self.board = state[0]
         self.lines_cleared += state[1][0]
         self.max_height = state[1][1]
         self.bumpy = state[1][2]
+        self.holes = state[1][3]
 
-    def act(self, state):
+    def act(self):
         # Given a state, choose an epsilon-greedy action
         states = self.next_states()
         # EXPLORE: Rather than use the learning model, just randomly choose a next state
         if np.random.rand() < self.epsilon:
-            action_idx = np.random.randint(0, len(states) - 1)
+            idx = np.random.randint(0, len(states) - 1)
         # EXPLOITATION: Use the greedy strategy: choose the state with the max number of rows cleared. Side note: I implemented way to check number of holes but idk how we want to factor that in yet (discuss with Emmett)
         else:
-            max_rows_cleared_idx = 0
-            max_rows_cleared = 0
+            reward_per_state = []
+            idx = -1
             for i in range(len(states)):
-                if states[i][1] > max_rows_cleared:
-                    max_rows_cleared = states[i][1]
-                    max_rows_cleared_idx = i
-            action_idx = max_rows_cleared_idx
+                # for readability
+                lines_clearend = states[i][1][0]
+                max_height = states[i][1][1]
+                bumps = states[i][1][2]
+                holes = states[i][1][3]
+                # reward function
+                reward_per_state.append(50 * lines_clearend - 10 * max_height - 5 * holes - 2 * bumps)
+            idx = np.argmax(reward_per_state)
 
         self.epsilon *= self.gamma
         # Want to make sure epsilon never falls below a certain rate
         self.gamma = max(self.epsilon_floor, self.epsilon)
 
-        return states[action_idx]
+        return states[idx]

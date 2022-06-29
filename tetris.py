@@ -146,7 +146,7 @@ class Tetris:
                 bumps = states[i][1][2]
                 holes = states[i][1][3]
                 # reward function
-                reward_per_state.append(50 * lines_clearend - 10 * max_height - 5 * holes - 2 * bumps)
+                reward_per_state.append(50 * lines_clearend - 10 * max_height - 5 * holes - 2 * bumps + 100)
             idx = np.argmax(reward_per_state)
 
         self.epsilon *= self.gamma

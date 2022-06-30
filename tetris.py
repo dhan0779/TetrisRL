@@ -90,7 +90,7 @@ class Tetris:
         for _ in range(num_cleared):
             board.insert(0, [0]*self.width)
 
-        max_height = max(self.max_height, pos[1])
+        max_height = max(self.max_height, self.height - pos[0])
 
         bumpy = 0
         prev_height = -1
@@ -100,7 +100,7 @@ class Tetris:
             if r == len(board) - 1:
                 if prev_height == -1:
                     prev_height = r
-                bumpy += (prev_height - r)
+                bumpy += abs(prev_height - r)
                 prev_height = r
                 r = 0
                 c += 1
@@ -109,7 +109,7 @@ class Tetris:
             else:
                 if prev_height == -1:
                     prev_height = r
-                bumpy += (prev_height - r)
+                bumpy += abs(prev_height - r)
                 prev_height = r
                 r = 0
                 c += 1
@@ -141,12 +141,12 @@ class Tetris:
             idx = -1
             for i in range(len(states)):
                 # for readability
-                lines_clearend = states[i][1][0]
+                lines_cleared = states[i][1][0]
                 max_height = states[i][1][1]
                 bumps = states[i][1][2]
                 holes = states[i][1][3]
                 # reward function
-                reward_per_state.append(50 * lines_clearend - 10 * max_height - 5 * holes - 2 * bumps + 100)
+                reward_per_state.append(50 * lines_cleared - 3 * max_height - bumps)
             idx = np.argmax(reward_per_state)
 
         self.epsilon *= self.gamma

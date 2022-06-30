@@ -27,14 +27,17 @@ def pretty_print(board):
 
 # initialize
 env = Tetris(20, 10)
-pretty_print(env.board)
 
 # # random choice
 # ns = env.next_states()
 # env.next_state(random.choice(ns))
 # pretty_print(env.board)
 
-for _ in range(20):
+for _ in range(5):
     # RL action
     env.next_state(env.act())
     pretty_print(env.board)
+    print("lines cleared: " + str(env.lines_cleared))
+    print("max height: " + str(env.max_height))
+    print("bumpyness: " + str(env.bumpy))
+    print("holes: " + str(env.holes))

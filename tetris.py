@@ -129,6 +129,12 @@ class Tetris:
         self.bumpy = state[1][2]
         self.holes = state[1][3]
 
+    def get_metrics(self):
+        return [self.lines_cleared, self.max_height, self.bumpy, self.holes]
+
+    def get_reward(self):
+        return 50*self.lines_cleared - 3*self.max_height-self.bumpy
+
     def act(self):
         # Given a state, choose an epsilon-greedy action
         states = self.next_states()
@@ -140,13 +146,8 @@ class Tetris:
             reward_per_state = []
             idx = -1
             for i in range(len(states)):
-                # for readability
-                lines_cleared = states[i][1][0]
-                max_height = states[i][1][1]
-                bumps = states[i][1][2]
-                holes = states[i][1][3]
                 # reward function
-                reward_per_state.append(50 * lines_cleared - 3 * max_height - bumps)
+                reward_per_state.append(self.get_reward())
             idx = np.argmax(reward_per_state)
 
         self.epsilon *= self.gamma

@@ -24,7 +24,7 @@ def train(args):
 
     for ec in range(args.epochs):
         #next_states = torch.stack(zip(*env.next_states()))
-        if len(env.next_states()) == 0:
+        if env.max_height >= env.height:
             env.reset_state()
             num_games+=1
         model.eval()

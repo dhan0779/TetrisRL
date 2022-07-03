@@ -18,7 +18,7 @@ def run():
     model = torch.load("saved/model_final")
     env = Tetris(20, 10)
 
-    while len(env.next_states()) != 0:
+    while env.max_height < env.height:
         pretty_print(env.board)
         time.sleep(0.5)
         max_pred = []

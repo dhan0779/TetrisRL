@@ -20,16 +20,19 @@ def train(args):
     optimizer = torch.optim.Adam(model.parameters())
     env = Tetris(20, 10)
     criterion = nn.MSELoss() #idk which loss tbh
-    
+    num_games = 0
+
     for ec in range(args.epochs):
         #next_states = torch.stack(zip(*env.next_states()))
         if len(env.next_states()) == 0:
             env.reset_state()
+            num_games+=1
         model.eval()
         with torch.no_grad():
             predicted_q = model(torch.from_numpy(np.array(env.get_metrics())))
         model.train()
         env.next_state(env.act()) #gotta fix this thing
+        #print(len(env.next_states()))
         #print(predicted_q)
         #=print(torch.tensor([sum(next_state[1])]))
 
@@ -43,6 +46,7 @@ def train(args):
             torch.save(model, "saved/model_{}".format(ec))
     
     torch.save(model, "saved/model_final")
+    print(num_games)
 
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--epsilon", default=parse_env.epsilon)
     parser.add_argument("--gamma", default=parse_env.gamma)
-    parser.add_argument("--epochs", default=10000)
+    parser.add_argument("--epochs", default=30000)
     return parser.parse_args()
 
 def train(args):

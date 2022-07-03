@@ -2,6 +2,7 @@ from tetris import Tetris
 import torch
 from termcolor import colored
 import numpy as np
+import time
 
 def pretty_print(board):
     colors = ["white", "red", "green", "blue", "green", "yellow", "cyan", "magenta"]
@@ -19,7 +20,7 @@ def run():
 
     while len(env.next_states()) != 0:
         pretty_print(env.board)
-        print("hi")
+        time.sleep(0.5)
         max_pred = []
         all_states = env.next_states()
         for  i in range(len(all_states)):

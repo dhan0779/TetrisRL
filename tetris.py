@@ -142,10 +142,10 @@ class Tetris:
         self.score = state[1][4]
 
     def get_metrics(self):
-        return [self.lines_cleared, self.max_height, self.bumpy, self.holes]
+        return [self.lines_cleared, self.score, self.max_height, self.bumpy, self.holes]
 
     def get_reward(self):
-        return 50*self.lines_cleared - 3*self.max_height-self.bumpy
+        return 20 * self.lines_cleared + self.score - self.max_height - self.bumpy - self.holes
 
     def act(self):
         self.turns += 1

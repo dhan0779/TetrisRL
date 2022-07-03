@@ -5,7 +5,7 @@ class DQN2(nn.Module):
         super().__init__()
 
         #this could be one block but idc 
-        self.l1 = nn.Sequential(nn.Linear(4,69), nn.ReLU()) #add whatever hidden layers ig
+        self.l1 = nn.Sequential(nn.Linear(5,69), nn.ReLU()) #add whatever hidden layers ig
         self.l2 = nn.Sequential(nn.Linear(69, 420), nn.ReLU())
         self.l3 = nn.Sequential(nn.Linear(420, 1))
 

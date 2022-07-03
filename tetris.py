@@ -141,6 +141,12 @@ class Tetris:
         self.holes = state[1][3]
         self.score = state[1][4]
 
+    def get_metrics(self):
+        return [self.lines_cleared, self.max_height, self.bumpy, self.holes]
+
+    def get_reward(self):
+        return 50*self.lines_cleared - 3*self.max_height-self.bumpy
+
     def act(self):
         self.turns += 1
         # Given a state, choose an epsilon-greedy action

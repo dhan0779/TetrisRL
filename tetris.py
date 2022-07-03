@@ -34,6 +34,8 @@ class Tetris:
         self.max_height = 0
         self.bumpy = 0
         self.holes = 0
+        self.score = 0
+        self.turns = 0
 
     def get_next_piece(self):
         self.piece = random.randint(0, len(self.pieces)-1)
@@ -60,8 +62,8 @@ class Tetris:
                 j = 0
                 while self.check_valid_move((j,i), next_piece):
                     j+=1
-                nboard, rows_cleared, max_height, bumpy, holes = self.put_piece((j-1, i), next_piece)
-                all_states.append((nboard, [rows_cleared, max_height, bumpy, holes]))
+                nboard, rows_cleared, max_height, bumpy, holes, score = self.put_piece((j-1, i), next_piece)
+                all_states.append((nboard, [rows_cleared, max_height, bumpy, holes, score]))
             next_piece = self.rotate_piece(next_piece)
         return all_states
 
@@ -75,10 +77,14 @@ class Tetris:
         return True
 
     def put_piece(self, pos, piece):  # actually put the damn piece
+        # scoring
+        this_score = 8
+
         board = [i[:] for i in self.board]
         for i in range(len(piece)):
             for j in range(len(piece[0])):
-                board[pos[0]+i][pos[1]+j] = piece[i][j]
+                if board[pos[0]+i][pos[1]+j] == 0:
+                    board[pos[0]+i][pos[1]+j] = piece[i][j]
 
         num_cleared = 0
         n_board = []
@@ -89,6 +95,11 @@ class Tetris:
                 n_board.append(row)
         for _ in range(num_cleared):
             board.insert(0, [0]*self.width)
+
+        # scoring for lines cleared
+        if num_cleared > 0:
+            multipliers = [40, 100, 300, 1200]
+            this_score += int(multipliers[num_cleared - 1] * ((self.lines_cleared / 10) + 1))
 
         max_height = max(self.max_height, self.height - pos[0])
 
@@ -120,7 +131,7 @@ class Tetris:
                 if board[i][j] == 0 and board[i+1][j] != 0 and board[i-1][j] != 0 and board[i][j+1] != 0 and board[i][j-1] != 0 and board[i+1][j+1] != 0 and board[i-1][j-1] != 0 and board[i+1][j-1] != 0 and board[i-1][j+1] != 0:
                     num_holes += 1
             
-        return board, num_cleared, max_height, bumpy, num_holes
+        return board, num_cleared, max_height, bumpy, num_holes, self.score + this_score
     
     def next_state(self, state): #might change based on other features
         self.board = state[0]
@@ -128,8 +139,10 @@ class Tetris:
         self.max_height = state[1][1]
         self.bumpy = state[1][2]
         self.holes = state[1][3]
+        self.score = state[1][4]
 
     def act(self):
+        self.turns += 1
         # Given a state, choose an epsilon-greedy action
         states = self.next_states()
         # EXPLORE: Rather than use the learning model, just randomly choose a next state
@@ -145,8 +158,9 @@ class Tetris:
                 max_height = states[i][1][1]
                 bumps = states[i][1][2]
                 holes = states[i][1][3]
+                score = states[i][1][4]
                 # reward function
-                reward_per_state.append(50 * lines_cleared - 3 * max_height - bumps)
+                reward_per_state.append(20 * lines_cleared + score - max_height - bumps - holes)
             idx = np.argmax(reward_per_state)
 
         self.epsilon *= self.gamma
@@ -154,3 +168,12 @@ class Tetris:
         self.gamma = max(self.epsilon_floor, self.epsilon)
 
         return states[idx]
+
+    def play_game(self):
+        play = True
+        while play:
+            self.next_state(self.act())
+            if self.max_height >= self.height:
+                play = False
+
+

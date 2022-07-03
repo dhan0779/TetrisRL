@@ -10,7 +10,7 @@ def pretty_print(board):
             if board[i][j] == 1:
                 color = "red"
             elif board[i][j] == 2:
-                color = "green"
+                color = "grey"
             elif board[i][j] == 3:
                 color = "blue"
             elif board[i][j] == 4:
@@ -23,21 +23,15 @@ def pretty_print(board):
                 color = "magenta"
             text += colored(str(board[i][j]), color) + " "
         print(text)
-    print('\n')
 
 # initialize
 env = Tetris(20, 10)
-
-# # random choice
-# ns = env.next_states()
-# env.next_state(random.choice(ns))
-# pretty_print(env.board)
-
-for _ in range(5):
-    # RL action
-    env.next_state(env.act())
-    pretty_print(env.board)
-    print("lines cleared: " + str(env.lines_cleared))
-    print("max height: " + str(env.max_height))
-    print("bumpyness: " + str(env.bumpy))
-    print("holes: " + str(env.holes))
+env.play_game()
+pretty_print(env.board)
+print("score: " + str(env.score))
+print("turns: " + str(env.turns))
+print("lines cleared: " + str(env.lines_cleared))
+print("max height: " + str(env.max_height))
+print("bumpyness: " + str(env.bumpy))
+print("holes: " + str(env.holes))
+print('\n')

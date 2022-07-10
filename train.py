@@ -14,7 +14,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--epsilon", default=parse_env.epsilon)
     parser.add_argument("--gamma", default=parse_env.gamma)
-    parser.add_argument("--epochs", default=30000)
+    parser.add_argument("--epochs", default=1500000)
     return parser.parse_args()
 
 def pretty_print(board):
@@ -34,8 +34,8 @@ def train(args):
     criterion = nn.MSELoss() #idk which loss tbh
 
     for ec in range(args.epochs):
-        #time.sleep(0.25)
-        #pretty_print(env.board)
+        time.sleep(0.25)
+        pretty_print(env.board)
         #next_states = torch.stack(zip(*env.next_states()))
         model.eval()
         with torch.no_grad():

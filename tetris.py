@@ -73,9 +73,9 @@ class Tetris:
 
         return holes
 
-    def next_states(self):
+    def next_states(self, next_p):
         all_states = []  # key: board, value: properties changed
-        ind_piece = next_piece
+        ind_piece = next_p
         next_piece = self.pieces[ind_piece]
 
         rotations = 1
@@ -89,9 +89,10 @@ class Tetris:
                 j = 0
                 while self.check_valid_move((j, i), next_piece):
                     j += 1
-                nboard, rows_cleared, max_height, bumpy, holes, score = self.put_piece(
+                if j != 0:
+                    nboard, rows_cleared, max_height, bumpy, holes, score = self.put_piece(
                     (j-1, i), next_piece)
-                all_states.append(
+                    all_states.append(
                     (nboard, [rows_cleared, max_height, bumpy, holes, score]))
             next_piece = self.rotate_piece(next_piece)
         self.states = all_states

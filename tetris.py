@@ -25,6 +25,7 @@ class Tetris:
         self.epsilon = 1
         self.epsilon_floor = 0.1  # minimum possible value for epsilon
         self.gamma = 0.99999975  # epsilon decay rate
+        self.num_games = 0
         self.reset_state()
 
     def reset_state(self):
@@ -36,6 +37,7 @@ class Tetris:
         self.holes = 0
         self.score = 0
         self.turns = 0
+        self.states = []
 
     def get_next_piece(self):
         self.piece = random.randint(0, len(self.pieces)-1)
@@ -46,9 +48,9 @@ class Tetris:
         piece = np.transpose(piece)
         return piece[..., ::-1]
 
-    def next_states(self):
+    def next_states(self, next_piece):
         all_states = []  # key: board, value: properties changed
-        ind_piece = self.get_next_piece()
+        ind_piece = next_piece
         next_piece = self.pieces[ind_piece]
 
         rotations = 1
@@ -62,9 +64,11 @@ class Tetris:
                 j = 0
                 while self.check_valid_move((j,i), next_piece):
                     j+=1
-                nboard, rows_cleared, max_height, bumpy, holes, score = self.put_piece((j-1, i), next_piece)
-                all_states.append((nboard, [rows_cleared, max_height, bumpy, holes, score]))
+                if j != 0:
+                    nboard, rows_cleared, max_height, bumpy, holes, score = self.put_piece((j-1, i), next_piece)
+                    all_states.append((nboard, [rows_cleared, max_height, bumpy, holes, score]))
             next_piece = self.rotate_piece(next_piece)
+        self.states = all_states
         return all_states
 
     def check_valid_move(self, pos, piece):  # check if putting piece is valid
@@ -94,7 +98,7 @@ class Tetris:
             else:
                 n_board.append(row)
         for _ in range(num_cleared):
-            board.insert(0, [0]*self.width)
+            n_board.insert(0, [0]*self.width)
 
         # scoring for lines cleared
         if num_cleared > 0:
@@ -107,15 +111,15 @@ class Tetris:
         prev_height = -1
         r = 0
         c = 0
-        while c < len(board[0]):
-            if r == len(board) - 1:
+        while c < len(n_board[0]):
+            if r == len(n_board) - 1:
                 if prev_height == -1:
                     prev_height = r
                 bumpy += abs(prev_height - r)
                 prev_height = r
                 r = 0
                 c += 1
-            elif board[r][c] == 0:
+            elif n_board[r][c] == 0:
                 r += 1
             else:
                 if prev_height == -1:
@@ -126,12 +130,12 @@ class Tetris:
                 c += 1
 
         num_holes = 0
-        for i in range(1, len(board) - 2):
-            for j in range(1, len(board[0])- 2):
-                if board[i][j] == 0 and board[i+1][j] != 0 and board[i-1][j] != 0 and board[i][j+1] != 0 and board[i][j-1] != 0 and board[i+1][j+1] != 0 and board[i-1][j-1] != 0 and board[i+1][j-1] != 0 and board[i-1][j+1] != 0:
+        for i in range(1, len(n_board) - 2):
+            for j in range(1, len(n_board[0])- 2):
+                if n_board[i][j] == 0 and n_board[i+1][j] != 0 and n_board[i-1][j] != 0 and n_board[i][j+1] != 0 and n_board[i][j-1] != 0 and n_board[i+1][j+1] != 0 and n_board[i-1][j-1] != 0 and n_board[i+1][j-1] != 0 and n_board[i-1][j+1] != 0:
                     num_holes += 1
             
-        return board, num_cleared, max_height, bumpy, num_holes, self.score + this_score
+        return n_board, num_cleared, max_height, bumpy, num_holes, self.score + this_score
     
     def next_state(self, state): #might change based on other features
         self.board = state[0]
@@ -150,7 +154,11 @@ class Tetris:
     def act(self):
         self.turns += 1
         # Given a state, choose an epsilon-greedy action
-        states = self.next_states()
+        states = self.next_states(self.get_next_piece())
+        if len(states) == 0:
+            self.reset_state()
+            self.num_games+=1
+            states = self.next_states(self.get_next_piece())
         # EXPLORE: Rather than use the learning model, just randomly choose a next state
         if np.random.rand() < self.epsilon:
             idx = np.random.randint(0, len(states) - 1)

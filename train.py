@@ -6,6 +6,8 @@ import torch.nn as nn
 import sys
 import argparse
 import numpy as np
+from termcolor import colored
+import time
 
 def parse_args():
     parse_env = Tetris(20, 10)
@@ -15,18 +17,26 @@ def parse_args():
     parser.add_argument("--epochs", default=30000)
     return parser.parse_args()
 
+def pretty_print(board):
+    colors = ["white", "red", "green", "blue", "green", "yellow", "cyan", "magenta"]
+    for i in range(len(board)):
+        text = ""
+        for j in range(len(board[0])):
+            color = colors[board[i][j]]
+            text += colored(str(board[i][j]), color) + " "
+        print(text)
+    print('\n')
+
 def train(args):
     model = DQN2()
     optimizer = torch.optim.Adam(model.parameters())
     env = Tetris(20, 10)
     criterion = nn.MSELoss() #idk which loss tbh
-    num_games = 0
 
     for ec in range(args.epochs):
+        #time.sleep(0.25)
+        #pretty_print(env.board)
         #next_states = torch.stack(zip(*env.next_states()))
-        if env.max_height >= env.height:
-            env.reset_state()
-            num_games+=1
         model.eval()
         with torch.no_grad():
             predicted_q = model(torch.from_numpy(np.array(env.get_metrics())))
@@ -44,9 +54,9 @@ def train(args):
         
         if ec % 1000 == 0:
             torch.save(model, "saved/model_{}".format(ec))
+            print("Completed Epoch {}/{} with {} games completed.".format(ec, args.epochs, env.num_games))
     
     torch.save(model, "saved/model_final")
-    print(num_games)
 
 
 if __name__ == "__main__":

@@ -17,12 +17,13 @@ def pretty_print(board):
 def run():
     model = torch.load("saved/model_final")
     env = Tetris(20, 10)
-
-    while env.max_height < env.height:
+    while True:
+        all_states = env.next_states(env.get_next_piece())
+        if len(all_states) == 0:
+            break
         pretty_print(env.board)
-        time.sleep(0.5)
+        time.sleep(0.25)
         max_pred = []
-        all_states = env.next_states()
         for  i in range(len(all_states)):
             max_pred.append(model(torch.from_numpy(np.array(all_states[i][1]))).item())
         env.next_state(all_states[np.argmax(max_pred)])

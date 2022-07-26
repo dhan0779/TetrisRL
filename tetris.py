@@ -23,8 +23,8 @@ class Tetris:
         self.height = height
         self.width = width
         self.epsilon = 1
-        self.epsilon_floor = 0.1  # minimum possible value for epsilon
-        self.gamma = 0.99999975  # epsilon decay rate
+        self.epsilon_floor = 0.001  # minimum possible value for epsilon
+        self.gamma = 0.999  # epsilon decay rate
         self.num_games = 0
         self.reset_state()
 
@@ -38,6 +38,7 @@ class Tetris:
         self.score = 0
         self.turns = 0
         self.states = []
+        self.terminal = False
 
     def get_next_piece(self):
         self.piece = random.randint(0, len(self.pieces)-1)
@@ -93,9 +94,11 @@ class Tetris:
                     nboard, rows_cleared, max_height, bumpy, holes, score = self.put_piece(
                     (j-1, i), next_piece)
                     all_states.append(
-                    (nboard, [rows_cleared, max_height, bumpy, holes, score]))
+                    (nboard, [rows_cleared, max_height, bumpy, holes, score], [j-1,i]))
             next_piece = self.rotate_piece(next_piece)
         self.states = all_states
+        if len(all_states) == 0:
+            self.terminal = True
         return all_states
 
     def check_valid_move(self, pos, piece):  # check if putting piece is valid
@@ -173,40 +176,40 @@ class Tetris:
         return [self.lines_cleared, self.score, self.max_height, self.bumpy, self.holes]
 
     def get_reward(self):
-        return 20 * self.lines_cleared + self.score - self.max_height - self.bumpy - self.holes
+        return 30 * self.lines_cleared + self.score - self.max_height - self.bumpy - 2*self.holes
 
-    def act(self):
+    def act(self, states, q_val):
         self.turns += 1
-        # Given a state, choose an epsilon-greedy action
-        states = self.next_states(self.get_next_piece())
-        if len(states) == 0:
-            self.reset_state()
-            self.num_games+=1
-            states = self.next_states(self.get_next_piece())
+        # states= self.next_states(self.get_next_piece())
+        # # Given a state, choose an epsilon-greedy action
+        # while len(states) == 0:
+        #     self.reset_state()
+        #     self.num_games+=1
+        #     states = self.next_states(self.get_next_piece())
         # EXPLORE: Rather than use the learning model, just randomly choose a next state
         if np.random.rand() < self.epsilon:
-            idx = np.random.randint(0, len(states) - 1)
+            idx = random.randint(0, len(states) - 1)
         # EXPLOITATION: Use the greedy strategy: choose the state with the max number of rows cleared. Side note: I implemented way to check number of holes but idk how we want to factor that in yet (discuss with Emmett)
         else:
-            reward_per_state = []
-            idx = -1
-            for i in range(len(states)):
-                # for readability
-                lines_cleared = states[i][1][0]
-                max_height = states[i][1][1]
-                bumps = states[i][1][2]
-                holes = states[i][1][3]
-                score = states[i][1][4]
-                # reward function
-                reward_per_state.append(
-                    20 * lines_cleared + score - max_height - bumps - holes)
-            idx = np.argmax(reward_per_state)
+            # reward_per_state = []
+            # idx = -1
+            # for i in range(len(states)):
+            #     # for readability
+            #     lines_cleared = states[i][1][0]
+            #     max_height = states[i][1][1]
+            #     bumps = states[i][1][2]
+            #     holes = states[i][1][3]
+            #     score = states[i][1][4]
+            #     # reward function
+            #     reward_per_state.append(
+            #         20 * lines_cleared + score - 5*max_height - bumps - 2*holes)
+            idx = np.argmax(q_val)
 
         self.epsilon *= self.gamma
         # Want to make sure epsilon never falls below a certain rate
-        self.gamma = max(self.epsilon_floor, self.epsilon)
+        self.epsilon = max(self.epsilon_floor, self.epsilon)
 
-        return states[idx]
+        return idx
 
     def play_game(self):
         play = True

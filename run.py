@@ -22,10 +22,11 @@ def run():
         if len(all_states) == 0:
             break
         pretty_print(env.board)
-        time.sleep(0.25)
+        time.sleep(0.75)
         max_pred = []
-        for  i in range(len(all_states)):
-            max_pred.append(model(torch.from_numpy(np.array(all_states[i][1]))).item())
+        for i in range(len(all_states)):
+            max_pred.append(model(torch.FloatTensor(all_states[i][1])).item())
+        #print(max_pred, np.argmax(max_pred))
         env.next_state(all_states[np.argmax(max_pred)])
 
 if __name__ == "__main__":

@@ -176,7 +176,7 @@ class Tetris:
         return [self.lines_cleared, self.score, self.max_height, self.bumpy, self.holes]
 
     def get_reward(self):
-        return 30 * self.lines_cleared + self.score - self.max_height - self.bumpy - 2*self.holes
+        return 30 * self.lines_cleared + self.score - self.max_height - self.bumpy - self.holes
 
     def act(self, states, q_val):
         self.turns += 1

@@ -8,6 +8,8 @@ David Han, Emmett Breen, Evan Williams
 * Numpy
 * torch
 * termcolor
+* openCV
+* Pillow
 
 ## Usage
 * pip3 install -r `requirements.txt`

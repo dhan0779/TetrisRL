@@ -1,7 +1,7 @@
 # TetrisRL
 This is a Tetris game played by an AI through reinforcement learning. We use Pytorch for creating the model and OpenCV for displaying the actual game.
 
-#Contributors:
+## Contributors:
 David Han, Emmett Breen, Evan Williams
 
 ## Requirements

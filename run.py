@@ -42,13 +42,11 @@ def run():
     outputTetris = []
     while True:
         all_states = env.next_states(env.get_next_piece())
-        if len(all_states) == 0:
+        if not all_states:
             break
         #pretty_print(env.board)
         #time.sleep(0.5)
-        max_pred = []
-        for i in range(len(all_states)):
-            max_pred.append(model(torch.FloatTensor(all_states[i][1])).item())
+        max_pred = [model(torch.FloatTensor(all_states[i][1])).item() for i in range(len(all_states))]
         #print(max_pred, np.argmax(max_pred))
         ns = all_states[np.argmax(max_pred)]
         outputTetris.append(ns[0])
